@@ -66,8 +66,8 @@ public class Product {
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "product_id", nullable = false)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@JoinColumn(name = "product_id", nullable = false)
     private List<ProductImage> productImages;
 
     private LocalDateTime creationDate;
@@ -198,8 +198,8 @@ public class Product {
         return productImages;
     }
 
-    public void setProductImages(List<ProductImage> productImages) {
-        this.productImages = productImages;
+    public void setProductImages(List<ProductImage> loadedImages) {
+        this.productImages = loadedImages;
     }
 
     public LocalDateTime getCreationDate() {

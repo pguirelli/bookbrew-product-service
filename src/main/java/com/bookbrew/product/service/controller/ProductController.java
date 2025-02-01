@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookbrew.product.service.dto.ProductDTO;
 import com.bookbrew.product.service.dto.ProductImageDTO;
+import com.bookbrew.product.service.dto.ProductImagesToListDTO;
 import com.bookbrew.product.service.model.Product;
 import com.bookbrew.product.service.service.ProductService;
 
@@ -57,6 +58,22 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/images")
+    public ResponseEntity<List<ProductImagesToListDTO>> getAllProductImages() {
+        return ResponseEntity.ok(productService.findAllProductImages());
+    }
+
+    @GetMapping("/images/{id}")
+    public ResponseEntity<ProductImageDTO> getProductImageById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findByIdProductImage(id));
+    }
+
+    @PostMapping("/images")
+    public ResponseEntity<ProductImageDTO> createProductImage(@Valid @RequestBody ProductImageDTO productImageDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.createProductImage(productImageDTO));
     }
 
     @PutMapping("/{productId}/images/{imageId}")
