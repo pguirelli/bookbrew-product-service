@@ -28,7 +28,7 @@ public class ProductImage {
 
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    @JoinColumn(name = "product_id", updatable = false)
     private Product product;
 
     public Long getId() {
