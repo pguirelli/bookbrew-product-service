@@ -3,9 +3,13 @@ package com.bookbrew.product.service.exception;
 import java.time.LocalDateTime;
 
 public class ErrorResponse {
+
     private LocalDateTime timestamp;
+
     private String message;
+
     private String details;
+
     private String path;
 
     public ErrorResponse(String message, String details, String path) {

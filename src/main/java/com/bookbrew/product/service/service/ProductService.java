@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.bookbrew.product.service.dto.ProductDTO;
 import com.bookbrew.product.service.dto.ProductImageDTO;
-import com.bookbrew.product.service.dto.ProductImagesToListDTO;
+import com.bookbrew.product.service.dto.ProductImagesSearchDTO;
+import com.bookbrew.product.service.dto.ProductSearchDTO;
 import com.bookbrew.product.service.exception.ResourceNotFoundException;
 import com.bookbrew.product.service.model.Product;
 import com.bookbrew.product.service.model.ProductImage;
@@ -34,17 +35,25 @@ public class ProductService {
     @Autowired
     private BrandService brandService;
 
-    public List<Product> findAll() {
+    public List<ProductSearchDTO> findAll() {
         List<Product> products = productRepository.findAll();
+        List<ProductSearchDTO> productsDTO = new ArrayList<>();
+
         if (products.isEmpty()) {
             throw new ResourceNotFoundException("No products found");
         }
-        return products;
+
+        for (Product product : products) {
+            convertToSearchDTO(product);
+            productsDTO.add(convertToSearchDTO(product));
+        }
+
+        return productsDTO;
     }
 
-    public Product findById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+    public ProductSearchDTO findById(Long id) {
+        return convertToSearchDTO(productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id)));
     }
 
     @Transactional
@@ -52,20 +61,24 @@ public class ProductService {
         product.setCategory(categoryService.getCategoryById(product.getCategory().getId()));
         product.setBrand(brandService.getBrandById(product.getBrand().getId()));
         product.setCreationDate(LocalDateTime.now());
-        product.setUpdateDate(LocalDateTime.now());
+
         if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
             List<ProductImage> processedImages = product.getProductImages().stream()
                     .map(image -> {
                         if (image.getId() != null) {
-                            return productImagesRepository.findById(image.getId())
+                            ProductImage existingImage = productImagesRepository.findById(image.getId())
                                     .orElseThrow(() -> new ResourceNotFoundException(
                                             "Product Image not found with id: " + image.getId()));
+                            existingImage.setProduct(product);
+                            return existingImage;
                         }
+                        image.setProduct(product);
                         return image;
                     })
                     .collect(Collectors.toList());
             product.setProductImages(processedImages);
         }
+
         return productRepository.save(product);
     }
 
@@ -106,7 +119,6 @@ public class ProductService {
         if (productDTO.getProductImages() != null) {
             List<ProductImage> updatedImages = new ArrayList<>();
 
-            // Keep existing images that are not being updated
             List<Long> updatedImageIds = productDTO.getProductImages().stream()
                     .filter(img -> img.getId() != null)
                     .map(ProductImage::getId)
@@ -116,7 +128,6 @@ public class ProductService {
                     .filter(img -> !updatedImageIds.contains(img.getId()))
                     .forEach(updatedImages::add);
 
-            // Process updated and new images
             for (ProductImage imageDTO : productDTO.getProductImages()) {
                 if (imageDTO.getId() != null) {
                     ProductImage existingImage = productImagesRepository.findById(imageDTO.getId())
@@ -124,11 +135,13 @@ public class ProductService {
                                     "Product Image not found with id: " + imageDTO.getId()));
                     existingImage.setPath(imageDTO.getPath());
                     existingImage.setDescription(imageDTO.getDescription());
+                    existingImage.setProduct(product);
                     updatedImages.add(existingImage);
                 } else {
                     ProductImage newImage = new ProductImage();
                     newImage.setPath(imageDTO.getPath());
                     newImage.setDescription(imageDTO.getDescription());
+                    newImage.setProduct(product);
                     updatedImages.add(newImage);
                 }
             }
@@ -144,62 +157,67 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
-        productRepository.delete(product);
+        productRepository.delete(productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id)));
     }
 
-    public List<ProductImagesToListDTO> findAllProductImages() {
+    public List<ProductImagesSearchDTO> findAllProductImages() {
         List<ProductImage> images = productImagesRepository.findAll();
+
         if (images.isEmpty()) {
             throw new ResourceNotFoundException("No product images found");
         }
+
         return convertToListDTO(images);
     }
 
-    public ProductImageDTO findByIdProductImage(Long id) {
-        ProductImage image = productImagesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product image not found with id: " + id));
-        return convertToDTO(image);
+    public ProductImagesSearchDTO findByIdProductImage(Long id) {
+        return convertToSearchDTO(productImagesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product image not found with id: " + id)));
     }
 
-    public ProductImageDTO createProductImage(ProductImageDTO productImageDTO) {
+    public ProductImagesSearchDTO createProductImage(ProductImageDTO productImageDTO) {
+        Long productId = productImageDTO.getProduct().getId();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+
         ProductImage productImage = new ProductImage();
         productImage.setDescription(productImageDTO.getDescription());
         productImage.setPath(productImageDTO.getPath());
-        productImage.setProduct(findById(productImageDTO.getProduct().getId()));
+        productImage.setProduct(product);
         productImagesRepository.save(productImage);
-        return convertToDTO(productImagesRepository.findById(productImage.getId()).get());
+
+        return convertToSearchDTO(productImage);
     }
 
-    private ProductImageDTO convertToDTO(ProductImage productImage) {
-        ProductImageDTO dto = new ProductImageDTO();
+    private ProductImagesSearchDTO convertToSearchDTO(ProductImage productImage) {
+        ProductImagesSearchDTO dto = new ProductImagesSearchDTO();
         dto.setId(productImage.getId());
         dto.setDescription(productImage.getDescription());
         dto.setPath(productImage.getPath());
-        dto.setProduct(productImage.getProduct());
+        dto.setIdProduct(productImage.getProduct().getId());
+
         return dto;
     }
 
-    private List<ProductImagesToListDTO> convertToListDTO(List<ProductImage> productImage) {
-        List<ProductImagesToListDTO> listDTO = new ArrayList<>();
+    private List<ProductImagesSearchDTO> convertToListDTO(List<ProductImage> productImage) {
+        List<ProductImagesSearchDTO> listDTO = new ArrayList<>();
+
         for (ProductImage image : productImage) {
-            ProductImagesToListDTO dto = new ProductImagesToListDTO();
+            ProductImagesSearchDTO dto = new ProductImagesSearchDTO();
             dto.setId(image.getId());
             dto.setDescription(image.getDescription());
             dto.setPath(image.getPath());
             dto.setIdProduct(image.getProduct().getId());
             listDTO.add(dto);
         }
+
         return listDTO;
     }
 
     @Transactional
-    public Product updateProductImage(Long productId, Long productImageId, ProductImageDTO productImageDTO) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
-
+    public ProductImagesSearchDTO updateProductImage(Long productId, Long productImageId,
+            ProductImageDTO productImageDTO) {
         ProductImage productImage = productImagesRepository.findById(productImageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product image not found with id: " + productImageId));
 
@@ -214,7 +232,7 @@ public class ProductService {
 
         productImagesRepository.save(productImage);
 
-        return findById(product.getId());
+        return convertToSearchDTO(productImage);
     }
 
     @Transactional
@@ -234,4 +252,28 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    private ProductSearchDTO convertToSearchDTO(Product product) {
+        ProductSearchDTO dto = new ProductSearchDTO();
+        dto.setId(product.getId());
+        dto.setCode(product.getCode());
+        dto.setTitle(product.getTitle());
+        dto.setDescription(product.getDescription());
+        dto.setPrice(product.getPrice());
+        dto.setStock(product.getStock());
+        dto.setMinimumStock(product.getMinimumStock());
+        dto.setStatus(product.getStatus());
+        dto.setWeight(product.getWeight());
+        dto.setHeight(product.getHeight());
+        dto.setWidth(product.getWidth());
+        dto.setLength(product.getLength());
+        dto.setSalesQuantity(product.getSalesQuantity());
+        dto.setCreationDate(product.getCreationDate());
+        dto.setUpdateDate(product.getUpdateDate());
+        dto.setCategoryId(product.getCategory().getId());
+        dto.setBrandId(product.getBrand().getId());
+        dto.setProductImagesId(
+                product.getProductImages().stream().map(ProductImage::getId).collect(Collectors.toList()));
+
+        return dto;
+    }
 }

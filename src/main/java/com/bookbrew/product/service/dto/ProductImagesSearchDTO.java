@@ -1,6 +1,6 @@
 package com.bookbrew.product.service.dto;
 
-public class ProductImagesToListDTO {
+public class ProductImagesSearchDTO {
 
     private Long id;
 
