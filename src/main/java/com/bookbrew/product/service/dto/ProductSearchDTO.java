@@ -1,73 +1,41 @@
-package com.bookbrew.product.service.model;
+package com.bookbrew.product.service.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+public class ProductSearchDTO {
 
-@Entity
-@Table(name = "products")
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Code is required")
     private String code;
 
-    @NotBlank(message = "Title is required")
     private String title;
 
-    @NotBlank(message = "Description is required")
     private String description;
 
-    @NotNull(message = "Price is required")
     private Double price;
 
-    @NotNull(message = "Stock is required")
     private Integer stock;
 
-    @NotNull(message = "Minimum stock is required")
     private Integer minimumStock;
 
-    @NotNull(message = "Status is required")
     private Boolean status;
 
-    @NotNull(message = "Weight is required")
     private Double weight;
 
-    @NotNull(message = "Height is required")
     private Double height;
 
-    @NotNull(message = "Width is required")
     private Double width;
 
-    @NotNull(message = "Length is required")
     private Double length;
 
     private Integer salesQuantity;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Long categoryId;
 
-    @ManyToOne
-    @JoinColumn(name = "brand_id", nullable = false)
-    private Brand brand;
+    private Long brandId;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImage> productImages;
+    private List<Long> productImagesId;
 
     private LocalDateTime creationDate;
 
@@ -177,28 +145,28 @@ public class Product {
         this.salesQuantity = salesQuantity;
     }
 
-    public Category getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public Brand getBrand() {
-        return brand;
+    public Long getBrandId() {
+        return brandId;
     }
 
-    public void setBrand(Brand brand) {
-        this.brand = brand;
+    public void setBrandId(Long brandId) {
+        this.brandId = brandId;
     }
 
-    public List<ProductImage> getProductImages() {
-        return productImages;
+    public List<Long> getProductImagesId() {
+        return productImagesId;
     }
 
-    public void setProductImages(List<ProductImage> loadedImages) {
-        this.productImages = loadedImages;
+    public void setProductImagesId(List<Long> productImagesId) {
+        this.productImagesId = productImagesId;
     }
 
     public LocalDateTime getCreationDate() {

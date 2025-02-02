@@ -33,21 +33,18 @@ public class BrandController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Brand> getBrandById(@PathVariable Long id) {
-        Brand brand = brandService.getBrandById(id);
-        return ResponseEntity.ok(brand);
+        return ResponseEntity.ok(brandService.getBrandById(id));
     }
 
     @PostMapping
     public ResponseEntity<Brand> createBrand(@RequestBody Brand brand) {
-        Brand createdBrand = brandService.createBrand(brand);
-        return new ResponseEntity<>(createdBrand, HttpStatus.CREATED);
+        return new ResponseEntity<>(brandService.createBrand(brand), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Brand> updateBrand(@PathVariable Long id,
             @RequestBody Brand brand) {
-        Brand updatedBrand = brandService.updateBrand(id, brand);
-        return ResponseEntity.ok(updatedBrand);
+        return ResponseEntity.ok(brandService.updateBrand(id, brand));
     }
 
     @DeleteMapping("/{id}")

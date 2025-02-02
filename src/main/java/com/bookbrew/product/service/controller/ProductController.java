@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookbrew.product.service.dto.ProductDTO;
 import com.bookbrew.product.service.dto.ProductImageDTO;
-import com.bookbrew.product.service.dto.ProductImagesToListDTO;
+import com.bookbrew.product.service.dto.ProductImagesSearchDTO;
+import com.bookbrew.product.service.dto.ProductSearchDTO;
 import com.bookbrew.product.service.model.Product;
 import com.bookbrew.product.service.service.ProductService;
 
@@ -32,15 +33,13 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.findAll();
-        return ResponseEntity.ok(products);
+    public ResponseEntity<List<ProductSearchDTO>> getAllProducts() {
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Product product = productService.findById(id);
-        return ResponseEntity.ok(product);
+    public ResponseEntity<ProductSearchDTO> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findById(id));
     }
 
     @PostMapping
@@ -61,28 +60,27 @@ public class ProductController {
     }
 
     @GetMapping("/images")
-    public ResponseEntity<List<ProductImagesToListDTO>> getAllProductImages() {
+    public ResponseEntity<List<ProductImagesSearchDTO>> getAllProductImages() {
         return ResponseEntity.ok(productService.findAllProductImages());
     }
 
     @GetMapping("/images/{id}")
-    public ResponseEntity<ProductImageDTO> getProductImageById(@PathVariable Long id) {
+    public ResponseEntity<ProductImagesSearchDTO> getProductImageById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findByIdProductImage(id));
     }
 
     @PostMapping("/images")
-    public ResponseEntity<ProductImageDTO> createProductImage(@Valid @RequestBody ProductImageDTO productImageDTO) {
+    public ResponseEntity<ProductImagesSearchDTO> createProductImage(@Valid @RequestBody ProductImageDTO productImageDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProductImage(productImageDTO));
     }
 
     @PutMapping("/{productId}/images/{imageId}")
-    public ResponseEntity<Product> updateProductImage(
+    public ResponseEntity<ProductImagesSearchDTO> updateProductImage(
             @PathVariable Long productId,
             @PathVariable Long imageId,
             @Valid @RequestBody ProductImageDTO productImageDTO) {
-        Product updatedProduct = productService.updateProductImage(productId, imageId, productImageDTO);
-        return ResponseEntity.ok(updatedProduct);
+        return ResponseEntity.ok(productService.updateProductImage(productId, imageId, productImageDTO));
     }
 
     @DeleteMapping("/{productId}/images/{imageId}")
