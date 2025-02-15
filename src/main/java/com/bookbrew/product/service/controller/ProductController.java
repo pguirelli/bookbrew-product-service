@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookbrew.product.service.dto.ProductDTO;
 import com.bookbrew.product.service.dto.ProductImageDTO;
 import com.bookbrew.product.service.dto.ProductImagesSearchDTO;
-import com.bookbrew.product.service.dto.ProductSearchDTO;
 import com.bookbrew.product.service.model.Product;
 import com.bookbrew.product.service.service.ProductService;
 
@@ -33,12 +34,12 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<ProductSearchDTO>> getAllProducts() {
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductSearchDTO> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findById(id));
     }
 
@@ -64,22 +65,23 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAllProductImages());
     }
 
-    @GetMapping("/images/{id}")
-    public ResponseEntity<ProductImagesSearchDTO> getProductImageById(@PathVariable Long id) {
+    @GetMapping(value = "/images/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getProductImageById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findByIdProductImage(id));
     }
 
-    @PostMapping("/images")
-    public ResponseEntity<ProductImagesSearchDTO> createProductImage(@Valid @RequestBody ProductImageDTO productImageDTO) {
+    @PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductImagesSearchDTO> createProductImage(
+            @Valid @ModelAttribute ProductImageDTO productImageDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProductImage(productImageDTO));
     }
 
-    @PutMapping("/{productId}/images/{imageId}")
+    @PutMapping(value = "/{productId}/images/{imageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductImagesSearchDTO> updateProductImage(
             @PathVariable Long productId,
             @PathVariable Long imageId,
-            @Valid @RequestBody ProductImageDTO productImageDTO) {
+            @Valid @ModelAttribute ProductImageDTO productImageDTO) {
         return ResponseEntity.ok(productService.updateProductImage(productId, imageId, productImageDTO));
     }
 

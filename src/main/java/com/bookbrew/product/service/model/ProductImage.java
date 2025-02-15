@@ -2,11 +2,13 @@ package com.bookbrew.product.service.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +26,9 @@ public class ProductImage {
     @Size(min = 2, max = 30, message = "Description must be between 2 and 30 characters")
     private String description;
 
-    private String path;
+    @Lob
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
+    private byte[] imageData;
 
     @JsonBackReference
     @ManyToOne
@@ -47,12 +51,12 @@ public class ProductImage {
         this.description = description;
     }
 
-    public String getPath() {
-        return path;
+    public byte[] getImageData() {
+        return imageData;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
     public Product getProduct() {
