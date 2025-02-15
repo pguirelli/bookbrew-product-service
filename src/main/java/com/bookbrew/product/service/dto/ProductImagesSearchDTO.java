@@ -6,7 +6,7 @@ public class ProductImagesSearchDTO {
 
     private String description;
 
-    private String path;
+    private byte[] image;
 
     private Long idProduct;
 
@@ -26,12 +26,12 @@ public class ProductImagesSearchDTO {
         this.description = description;
     }
 
-    public String getPath() {
-        return path;
+    public byte[] getImage() {
+        return image;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public Long getIdProduct() {

@@ -1,5 +1,7 @@
 package com.bookbrew.product.service.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.bookbrew.product.service.model.Product;
 
 public class ProductImageDTO {
@@ -8,7 +10,7 @@ public class ProductImageDTO {
 
     private String description;
 
-    private String path;
+    private MultipartFile image;
 
     private Product product;
 
@@ -28,12 +30,12 @@ public class ProductImageDTO {
         this.description = description;
     }
 
-    public String getPath() {
-        return path;
+    public MultipartFile getImage() {
+        return image;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setImage(MultipartFile image) {
+        this.image = image;
     }
 
     public Product getProduct() {
